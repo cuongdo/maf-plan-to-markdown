@@ -111,11 +111,14 @@ The PB Program CSVs share a fixed structure:
 Dates are *not* in the source CSV. The user supplies the race date; the tool computes everything else.
 
 1. Find the **race week**: the week whose `STAGE` cell equals `Race week` (case-insensitive). If multiple, use the highest-numbered.
-2. Find the **race day-of-week**: scan all day cells (cols 2–8 across all 5 rows) of the race week for one containing `Race day`. The column position determines the day offset (col 2 = Mon = 0, …, col 8 = Sun = 6).
-3. Race week's Monday = `race_date − raceDayOffset days`.
-4. Each other week's Monday = `race_week_monday − 7 × (race_week_number − N)` for week N.
+2. Find the **CSV race-day column**: scan all day cells (cols 2–8 across all 5 rows) of the race week for one containing `Race day`. The column position determines the CSV race-day offset (col 2 = Mon = 0, …, col 8 = Sun = 6).
+3. Compute the **user race-day offset** from the user-supplied race date weekday (Mon=0, …, Sun=6). The calendar is anchored to this — dates always line up with reality.
+4. Race week's Monday = `race_date − userRaceDayOffset days`.
+5. Each other week's Monday = `race_week_monday − 7 × (race_week_number − N)` for week N.
+6. **Race-day cell relocation**: if the CSV's race-day column ≠ the user's race-day column, the race-day cell content is moved from its CSV position to the user's race-day position; the CSV race-day position becomes empty. All other CSV columns stay in place literally — no rotation.
+7. Race week is truncated to end on the user's race day (no rendered days after).
 
-If the user's race date falls on a different weekday than the `Race day` cell suggests, trust the user's date but show a non-blocking UI note (e.g. "Your race date is a Saturday but the plan's Race day cell is in the Sunday column.").
+A non-blocking informational UI note announces the relocation when it happens (e.g. "Race day workout placed on Saturday (it was in the Sunday column of the source CSV).").
 
 ## Rendering
 

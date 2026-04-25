@@ -42,10 +42,9 @@
       output.value = md;
       preview.innerHTML = marked.parse(md);
       const check = checkRaceDateConsistency(plan);
-      if (check.mismatch) {
+      if (check.moved) {
         showNote(
-          `Note: your race date is a ${check.raceDateDay}, but the plan's "Race day" cell is in the ${check.planDay} column. ` +
-          `Dates were anchored to your race date.`
+          `Race day workout placed on ${check.raceDateDay} (it was in the ${check.planDay} column of the source CSV).`
         );
       }
     } catch (err) {

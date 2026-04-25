@@ -182,16 +182,26 @@ function parseISODate(input) {
   return new Date(y, m - 1, d);
 }
 
+function emptyDay() {
+  return { aerobic: null, higherIntensity: null, crossTraining: null, drills: false, strength: false };
+}
+
 function assignDates(weeks, raceDate) {
-  const { raceWeek, raceDayOffset } = findRaceAnchor(weeks);
-  const raceWeekMonday = addDays(raceDate, -raceDayOffset);
+  const { raceWeek, raceDayOffset: csvRaceDayOffset } = findRaceAnchor(weeks);
+  const userRaceDayOffset = (raceDate.getDay() + 6) % 7;
+  const raceWeekMonday = addDays(raceDate, -userRaceDayOffset);
   for (const w of weeks) {
     const weeksBefore = raceWeek.number - w.number;
     w.mondayDate = addDays(raceWeekMonday, -7 * weeksBefore);
     w.dayCount = 7;
   }
-  raceWeek.dayCount = raceDayOffset + 1;
-  return { raceWeek, raceDayOffset };
+  raceWeek.dayCount = userRaceDayOffset + 1;
+  if (csvRaceDayOffset !== userRaceDayOffset) {
+    const raceDayContent = raceWeek.days[csvRaceDayOffset];
+    raceWeek.days[csvRaceDayOffset] = emptyDay();
+    raceWeek.days[userRaceDayOffset] = raceDayContent;
+  }
+  return { raceWeek, csvRaceDayOffset, userRaceDayOffset };
 }
 
 function parsePlan(rows, raceDateInput) {
@@ -319,16 +329,15 @@ function renderMarkdown(plan) {
 }
 
 function checkRaceDateConsistency(plan) {
-  const { raceDate, anchor } = plan;
-  const actualDayOffset = (raceDate.getDay() + 6) % 7;
-  if (actualDayOffset !== anchor.raceDayOffset) {
+  const { anchor } = plan;
+  if (anchor.csvRaceDayOffset !== anchor.userRaceDayOffset) {
     return {
-      mismatch: true,
-      raceDateDay: DAY_NAMES[actualDayOffset],
-      planDay: DAY_NAMES[anchor.raceDayOffset],
+      moved: true,
+      raceDateDay: DAY_NAMES[anchor.userRaceDayOffset],
+      planDay: DAY_NAMES[anchor.csvRaceDayOffset],
     };
   }
-  return { mismatch: false };
+  return { moved: false };
 }
 
 if (typeof module !== 'undefined' && module.exports) {

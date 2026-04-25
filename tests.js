@@ -74,7 +74,8 @@ QUnit.module('parsePlan (fixture)', hooks => {
     const rows = parseCSV(csvText);
     const plan = parsePlan(rows, '2026-05-17');
     assert.equal(plan.anchor.raceWeek.number, 12);
-    assert.equal(plan.anchor.raceDayOffset, 6, 'Sunday is offset 6');
+    assert.equal(plan.anchor.csvRaceDayOffset, 6, 'CSV Sunday offset 6');
+    assert.equal(plan.anchor.userRaceDayOffset, 6, 'user Sunday offset 6');
   });
 
   QUnit.test('race date 2026-05-17 (Sunday) anchors week 12 Monday to 2026-05-11', assert => {
@@ -125,18 +126,18 @@ QUnit.module('checkRaceDateConsistency', hooks => {
     csvText = await fetch('examples/goal-hm-level-1.csv').then(r => r.text());
   });
 
-  QUnit.test('no mismatch when race date matches Race day column', assert => {
+  QUnit.test('no movement when race date matches Race day column', assert => {
     const rows = parseCSV(csvText);
     const plan = parsePlan(rows, '2026-05-17');
     const check = checkRaceDateConsistency(plan);
-    assert.equal(check.mismatch, false);
+    assert.equal(check.moved, false);
   });
 
-  QUnit.test('mismatch flagged when race date is Saturday but Race day cell is Sunday', assert => {
+  QUnit.test('movement reported when race date is Saturday', assert => {
     const rows = parseCSV(csvText);
     const plan = parsePlan(rows, '2026-05-16');
     const check = checkRaceDateConsistency(plan);
-    assert.equal(check.mismatch, true);
+    assert.equal(check.moved, true);
     assert.equal(check.raceDateDay, 'Saturday');
     assert.equal(check.planDay, 'Sunday');
   });
@@ -202,15 +203,17 @@ QUnit.module('renderMarkdown', hooks => {
     assert.ok(w12Section.includes('### Sunday, 5/17/2026'), 'Sunday is final day');
   });
 
-  QUnit.test('Saturday race truncates race week to end on Saturday', assert => {
-    const swapped = csvText.replace(', ,Race day,2 hours 43 minutes', ',Race day, ,2 hours 43 minutes');
-    const plan = parsePlan(parseCSV(swapped), '2026-05-16');
+  QUnit.test('Saturday race truncates race week + dates correct + race day moved', assert => {
+    const plan = parsePlan(parseCSV(csvText), '2026-05-16');
     const md = renderMarkdown(plan);
     const w12 = md.split(/^## Week 12,/m)[1];
-    assert.ok(w12.includes('### Saturday, 5/16/2026'), 'Saturday rendered');
-    assert.notOk(/### Sunday,/.test(w12), 'Sunday not rendered for Saturday-race race week');
+    assert.ok(w12.includes('### Saturday, 5/16/2026'), 'Saturday rendered with correct date');
+    assert.notOk(/### Sunday,/.test(w12), 'Sunday not rendered (truncated)');
+    assert.ok(/### Monday, 5\/11\/2026/.test(w12), 'Monday is real Mon 5/11');
+    const satSection = w12.split(/### Saturday,/)[1];
+    assert.ok(/Race day/i.test(satSection), 'Race day workout appears on Saturday');
     const w11 = md.split(/^## Week 11,/m)[1].split(/^---$/m)[0];
-    assert.ok(/### Sunday,/.test(w11), 'week 11 still has full Mon-Sun');
+    assert.ok(/### Sunday, 5\/10\/2026/.test(w11), 'week 11 Sunday = real Sun 5/10');
   });
 });
 

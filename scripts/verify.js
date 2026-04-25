@@ -153,7 +153,8 @@ test('week 9 metadata', () => {
 test('week 12 race week, Sunday race day', () => {
   const plan = parsePlan(parseCSV(csvText), '2026-05-17');
   eq(plan.anchor.raceWeek.number, 12);
-  eq(plan.anchor.raceDayOffset, 6);
+  eq(plan.anchor.csvRaceDayOffset, 6);
+  eq(plan.anchor.userRaceDayOffset, 6);
 });
 test('race date Sunday 2026-05-17 -> week 12 Monday 5/11/2026', () => {
   const plan = parsePlan(parseCSV(csvText), '2026-05-17');
@@ -184,14 +185,14 @@ test('step-back week 4 higher intensity 0 -> empty', () => {
 });
 
 console.log('\ncheckRaceDateConsistency');
-test('no mismatch when race date matches column', () => {
+test('no movement when race date matches column', () => {
   const plan = parsePlan(parseCSV(csvText), '2026-05-17');
-  eq(checkRaceDateConsistency(plan).mismatch, false);
+  eq(checkRaceDateConsistency(plan).moved, false);
 });
-test('mismatch flagged when race date is Saturday', () => {
+test('movement reported when race date is Saturday but CSV race day is Sunday', () => {
   const plan = parsePlan(parseCSV(csvText), '2026-05-16');
   const c = checkRaceDateConsistency(plan);
-  eq(c.mismatch, true);
+  eq(c.moved, true);
   eq(c.raceDateDay, 'Saturday');
   eq(c.planDay, 'Sunday');
 });
@@ -231,17 +232,20 @@ test('Sunday race week renders all 7 days (no truncation)', () => {
   ok(w12Section.includes('### Sunday, 5/17/2026'), 'Sunday rendered as final day');
   ok(!/### Monday,.*5\/18/.test(w12Section), 'no day after race');
 });
-test('Saturday race truncates race week to end on Saturday', () => {
-  // simulate Brooklyn-style: temporarily put Race day in Saturday column
-  const saturdayCsv = csvText.replace(', ,Race day,2 hours 43 minutes', ',Race day, ,2 hours 43 minutes');
-  const satPlan = parsePlan(parseCSV(saturdayCsv), '2026-05-16');
+test('Saturday race truncates race week + dates correct + race day moved', () => {
+  // Original CSV has Race day in Sunday column. User picks Saturday race date.
+  const satPlan = parsePlan(parseCSV(csvText), '2026-05-16');
   const satMd = renderMarkdown(satPlan);
   const w12 = satMd.split(/^## Week 12,/m)[1];
-  ok(w12.includes('### Saturday, 5/16/2026'), 'Saturday rendered');
-  ok(!/### Sunday,/.test(w12), 'Sunday not rendered for Saturday-race race week');
-  // Earlier weeks should still go full 7 days
+  ok(w12.includes('### Saturday, 5/16/2026'), 'Saturday rendered with correct date');
+  ok(!/### Sunday,/.test(w12), 'Sunday not rendered (truncated)');
+  ok(/### Monday, 5\/11\/2026/.test(w12), 'Monday is the actual Mon 5/11, not shifted');
+  // Race day workout should now be on Saturday
+  const satSection = w12.split(/### Saturday,/)[1];
+  ok(/Race day/i.test(satSection), 'Race day workout appears on Saturday');
+  // Earlier weeks still go full Mon-Sun with correct dates
   const w11 = satMd.split(/^## Week 11,/m)[1].split(/^---$/m)[0];
-  ok(/### Sunday,/.test(w11), 'week 11 still has Sunday');
+  ok(/### Sunday, 5\/10\/2026/.test(w11), 'week 11 Sunday = real Sun 5/10');
 });
 
 console.log('\nerror cases');
