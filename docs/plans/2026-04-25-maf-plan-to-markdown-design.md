@@ -177,6 +177,7 @@ If a day has nothing scheduled, still emit the day heading plus `- [ ] Rest day`
 - Total volume → `**Total volume: {hms string}**` immediately under the week heading.
 - Day heading → `### Day name, M/D/YYYY`.
 - `---` horizontal rule between consecutive weeks.
+- **Race week truncation**: the race week ends on the race day. If the `Race day` cell is in the Saturday column (offset 5), the race week renders Mon–Sat only — no Sunday section. All earlier weeks render the full Mon–Sun.
 
 ## Edge cases & errors
 

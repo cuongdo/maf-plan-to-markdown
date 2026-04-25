@@ -188,7 +188,9 @@ function assignDates(weeks, raceDate) {
   for (const w of weeks) {
     const weeksBefore = raceWeek.number - w.number;
     w.mondayDate = addDays(raceWeekMonday, -7 * weeksBefore);
+    w.dayCount = 7;
   }
+  raceWeek.dayCount = raceDayOffset + 1;
   return { raceWeek, raceDayOffset };
 }
 
@@ -287,7 +289,8 @@ function renderWeek(week) {
     `**Total volume: ${week.totalVolume}**`,
     '',
   ];
-  for (let d = 0; d < 7; d++) {
+  const dayCount = week.dayCount || 7;
+  for (let d = 0; d < dayCount; d++) {
     const dayDate = addDays(monday, d);
     lines.push(renderDay(week.days[d], DAY_NAMES[d], formatShortDate(dayDate)));
     lines.push('');

@@ -194,6 +194,24 @@ QUnit.module('renderMarkdown', hooks => {
     const hrCount = (md.match(/^---$/gm) || []).length;
     assert.equal(hrCount, 11, '11 separators between 12 weeks');
   });
+
+  QUnit.test('Sunday race week renders all 7 days', assert => {
+    const plan = parsePlan(parseCSV(csvText), '2026-05-17');
+    const md = renderMarkdown(plan);
+    const w12Section = md.split(/^## Week 12,/m)[1];
+    assert.ok(w12Section.includes('### Sunday, 5/17/2026'), 'Sunday is final day');
+  });
+
+  QUnit.test('Saturday race truncates race week to end on Saturday', assert => {
+    const swapped = csvText.replace(', ,Race day,2 hours 43 minutes', ',Race day, ,2 hours 43 minutes');
+    const plan = parsePlan(parseCSV(swapped), '2026-05-16');
+    const md = renderMarkdown(plan);
+    const w12 = md.split(/^## Week 12,/m)[1];
+    assert.ok(w12.includes('### Saturday, 5/16/2026'), 'Saturday rendered');
+    assert.notOk(/### Sunday,/.test(w12), 'Sunday not rendered for Saturday-race race week');
+    const w11 = md.split(/^## Week 11,/m)[1].split(/^---$/m)[0];
+    assert.ok(/### Sunday,/.test(w11), 'week 11 still has full Mon-Sun');
+  });
 });
 
 QUnit.module('error cases', () => {

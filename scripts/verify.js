@@ -226,6 +226,23 @@ test('11 horizontal rule separators between 12 weeks', () => {
   const hrCount = (md.match(/^---$/gm) || []).length;
   eq(hrCount, 11);
 });
+test('Sunday race week renders all 7 days (no truncation)', () => {
+  const w12Section = md.split(/^## Week 12,/m)[1];
+  ok(w12Section.includes('### Sunday, 5/17/2026'), 'Sunday rendered as final day');
+  ok(!/### Monday,.*5\/18/.test(w12Section), 'no day after race');
+});
+test('Saturday race truncates race week to end on Saturday', () => {
+  // simulate Brooklyn-style: temporarily put Race day in Saturday column
+  const saturdayCsv = csvText.replace(', ,Race day,2 hours 43 minutes', ',Race day, ,2 hours 43 minutes');
+  const satPlan = parsePlan(parseCSV(saturdayCsv), '2026-05-16');
+  const satMd = renderMarkdown(satPlan);
+  const w12 = satMd.split(/^## Week 12,/m)[1];
+  ok(w12.includes('### Saturday, 5/16/2026'), 'Saturday rendered');
+  ok(!/### Sunday,/.test(w12), 'Sunday not rendered for Saturday-race race week');
+  // Earlier weeks should still go full 7 days
+  const w11 = satMd.split(/^## Week 11,/m)[1].split(/^---$/m)[0];
+  ok(/### Sunday,/.test(w11), 'week 11 still has Sunday');
+});
 
 console.log('\nerror cases');
 test('empty CSV -> Header row not found', () => {
