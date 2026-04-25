@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAF Plan to Markdown</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>MAF Plan to Markdown</h1>
+    <p>Convert a Phil Maffetone PB Program training plan (CSV) into a clean markdown checklist anchored to your race date.</p>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="row">
+        <label for="csv-file">CSV file</label>
+        <input id="csv-file" type="file" accept=".csv,text/csv">
+      </div>
+
+      <div class="row">
+        <label for="race-date">Race date</label>
+        <input id="race-date" type="date">
+      </div>
+
+      <div class="row">
+        <button id="convert" class="primary">Convert</button>
+      </div>
+
+      <label for="csv-paste">Or paste CSV here</label>
+      <textarea id="csv-paste" placeholder="Paste CSV contents…"></textarea>
+    </section>
+
+    <section class="panel">
+      <div id="error-banner" class="banner error" hidden></div>
+      <div id="note-banner" class="banner note" hidden></div>
+
+      <label for="output">Markdown output</label>
+      <textarea id="output" readonly placeholder="Output will appear here after Convert."></textarea>
+
+      <div class="row">
+        <button id="copy">Copy</button>
+        <button id="download">Download .md</button>
+      </div>
+
+      <label>Rendered preview</label>
+      <div id="preview" class="preview"></div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="https://github.com/cuongdo/maf-plan-to-markdown">Source on GitHub</a>
+    &middot;
+    <a href="tests.html">Tests</a>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.2/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@14.1.3/marked.min.js"></script>
+  <script src="app.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>
