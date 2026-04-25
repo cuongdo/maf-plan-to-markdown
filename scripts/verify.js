@@ -242,7 +242,8 @@ test('Saturday race truncates race week + dates correct + race day moved', () =>
   ok(/### Monday, 5\/11\/2026/.test(w12), 'Monday is the actual Mon 5/11, not shifted');
   // Race day workout should now be on Saturday
   const satSection = w12.split(/### Saturday,/)[1];
-  ok(/Race day/i.test(satSection), 'Race day workout appears on Saturday');
+  ok(/^Race Day!$/m.test(satSection), 'race day rendered as plain "Race Day!" line');
+  ok(!/- \[ \] Higher intensity:[\s\S]*Race day/i.test(satSection), 'no checkbox/bullet wrapper for race day');
   // Earlier weeks still go full Mon-Sun with correct dates
   const w11 = satMd.split(/^## Week 11,/m)[1].split(/^---$/m)[0];
   ok(/### Sunday, 5\/10\/2026/.test(w11), 'week 11 Sunday = real Sun 5/10');

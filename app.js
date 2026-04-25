@@ -256,8 +256,19 @@ function normalizeRest(text) {
   return text;
 }
 
+function isRaceDay(day) {
+  const cells = [day.aerobic, day.higherIntensity, day.crossTraining];
+  return cells.some(c => c && /race day/i.test(c));
+}
+
 function renderDay(day, dayName, dateStr) {
   const lines = [`### ${dayName}, ${dateStr}`];
+
+  if (isRaceDay(day)) {
+    lines.push('Race Day!');
+    return lines.join('\n');
+  }
+
   const items = [];
 
   if (day.aerobic) {

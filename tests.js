@@ -211,7 +211,7 @@ QUnit.module('renderMarkdown', hooks => {
     assert.notOk(/### Sunday,/.test(w12), 'Sunday not rendered (truncated)');
     assert.ok(/### Monday, 5\/11\/2026/.test(w12), 'Monday is real Mon 5/11');
     const satSection = w12.split(/### Saturday,/)[1];
-    assert.ok(/Race day/i.test(satSection), 'Race day workout appears on Saturday');
+    assert.ok(/^Race Day!$/m.test(satSection), 'race day rendered as plain "Race Day!" line');
     const w11 = md.split(/^## Week 11,/m)[1].split(/^---$/m)[0];
     assert.ok(/### Sunday, 5\/10\/2026/.test(w11), 'week 11 Sunday = real Sun 5/10');
   });

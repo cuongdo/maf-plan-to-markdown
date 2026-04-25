@@ -436,5 +436,4 @@
   - [ ] Drills and/or strides
 
 ### Sunday, 5/17/2026
-- [ ] Higher intensity:
-  - Race day
+Race Day!
