@@ -6,7 +6,9 @@ A self-contained static web page. No build step, no server, no LLM. Runs entirel
 
 ## Use it
 
-Open `index.html` in your browser, or visit the live version on GitHub Pages.
+**[Live demo →](https://cuongdo.github.io/maf-plan-to-markdown/)**
+
+Or open `index.html` locally in your browser.
 
 1. Pick the CSV file (or paste the contents)
 2. Pick your race date
