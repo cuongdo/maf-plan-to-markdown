@@ -1,6 +1,6 @@
 # MAF Plan to Markdown
 
-Convert a Phil Maffetone PB Program training plan, exported as a single-tab CSV, into a clean markdown checklist anchored to your race date.
+Convert a Personal Best Running Club training plan, exported as a single-tab CSV, into a clean markdown checklist anchored to your race date.
 
 A self-contained static web page. No build step, no server, no LLM. Runs entirely in your browser.
 
@@ -17,7 +17,7 @@ Or open `index.html` locally in your browser.
 
 ## Input expectations
 
-The tool targets the [PB Program](https://philmaffetone.com/) training plan format. The CSV must:
+The tool targets the Personal Best Running Club training plan format. The CSV must:
 
 - Be a single tab exported as CSV
 - Have a header row with `WEEK, WORKOUT, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY, WEEKLY VOLUME, STAGE`

@@ -5,7 +5,7 @@
 
 ## Goal
 
-A self-contained static web page that converts a Phil Maffetone (MAF) PB Program training plan, exported as a single-tab CSV, into a clean markdown document with checkboxes, organized by week and day, anchored to a user-supplied race date.
+A self-contained static web page that converts a Personal Best Running Club training plan, exported as a single-tab CSV, into a clean markdown document with checkboxes, organized by week and day, anchored to a user-supplied race date.
 
 Hosted on GitHub Pages, open source.
 
@@ -76,7 +76,7 @@ Clean, system font, no framework.
 
 ### Input shape
 
-The PB Program CSVs share a fixed structure:
+The Personal Best Running Club CSVs share a fixed structure:
 
 - Optional row 1: plan title in column A (e.g. `GOAL HALF MARATHON - LEVEL 1 - TRAIN 3 TO 5 HOURS PER WEEK`)
 - A few preamble rows (blank or descriptive day-themes).
@@ -228,7 +228,7 @@ Run locally with `python3 -m http.server` then visit `/tests.html`. Same on GitH
 
 - **LICENSE**: MIT.
 - **README.md**: short description, screenshot, live demo link, "open `index.html` in a browser or visit the Pages URL", note about the required `Race week` / `Race day` markers in the source CSV.
-- **examples/**: original PB Program CSV (renamed to make clear it's a sample) + its expected `.md` output, doubling as test fixture.
+- **examples/**: original Personal Best Running Club CSV (renamed to make clear it's a sample) + its expected `.md` output, doubling as test fixture.
 - **`.gitignore`**: `.DS_Store`.
 
 ## Out of scope (future work)
