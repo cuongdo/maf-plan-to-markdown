@@ -203,6 +203,16 @@ QUnit.module('renderMarkdown', hooks => {
     assert.ok(w12Section.includes('### Sunday, 5/17/2026'), 'Sunday is final day');
   });
 
+  QUnit.test('race day renders as plain "Race Day!" with no bullets or checkboxes', assert => {
+    const plan = parsePlan(parseCSV(csvText), '2026-05-17');
+    const md = renderMarkdown(plan);
+    const w12 = md.split(/^## Week 12,/m)[1];
+    const sun = w12.split(/### Sunday,/)[1];
+    assert.ok(/^Race Day!$/m.test(sun), 'plain "Race Day!" line present');
+    assert.notOk(/- \[ \]/.test(sun), 'no checkbox in race day section');
+    assert.notOk(/Higher intensity:/i.test(sun), 'no "Higher intensity:" wrapper');
+  });
+
   QUnit.test('Saturday race truncates race week + dates correct + race day moved', assert => {
     const plan = parsePlan(parseCSV(csvText), '2026-05-16');
     const md = renderMarkdown(plan);

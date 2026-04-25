@@ -227,6 +227,14 @@ test('11 horizontal rule separators between 12 weeks', () => {
   const hrCount = (md.match(/^---$/gm) || []).length;
   eq(hrCount, 11);
 });
+test('race day renders as plain "Race Day!" with no bullets or checkboxes', () => {
+  const w12 = md.split(/^## Week 12,/m)[1];
+  const sun = w12.split(/### Sunday,/)[1];
+  ok(/^Race Day!$/m.test(sun), 'plain "Race Day!" line present');
+  ok(!/- \[ \]/.test(sun), 'no checkbox in race day section');
+  ok(!/^- /m.test(sun.split(/^---$/m)[0]), 'no bullet in race day section');
+  ok(!/Higher intensity:/i.test(sun), 'no "Higher intensity:" wrapper');
+});
 test('Sunday race week renders all 7 days (no truncation)', () => {
   const w12Section = md.split(/^## Week 12,/m)[1];
   ok(w12Section.includes('### Sunday, 5/17/2026'), 'Sunday rendered as final day');
