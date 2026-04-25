@@ -47,6 +47,11 @@ The split between `app.js` (pure functions) and `ui.js` (DOM wiring) keeps the p
 
 ### UI
 
+Inputs:
+- CSV file picker (or paste textarea)
+- Race date (`<input type="date">`)
+- Long run day dropdown (Mon–Sun, defaults to Sunday — the publisher's convention)
+
 Two-column flexbox layout, stacking on narrow screens:
 
 ```
@@ -105,6 +110,15 @@ The PB Program CSVs share a fixed structure:
 - Treat exact `rest` (case-insensitive) as the literal `Rest day`.
 - Strip `✅` characters anywhere they appear (personal annotation, irrelevant).
 - Collapse 3+ consecutive blank lines to 2.
+
+## Long run day swap
+
+The publisher CSVs put the long run on Sunday. If the user picks a different long run day:
+
+- For every week, swap the entire `Day` object at offset `longRunDayOffset` with the one at offset 6 (Sunday).
+- Applied **before** race-day relocation, so the race-day cell content (which originally lived in the Sunday column) follows the swap to the new long run day. The race-day relocation logic then moves it to the user's actual race-day position.
+
+Default offset is 6 (Sunday → no-op).
 
 ## Date anchoring
 

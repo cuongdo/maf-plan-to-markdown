@@ -4,6 +4,7 @@
   const fileInput = document.getElementById('csv-file');
   const pasteArea = document.getElementById('csv-paste');
   const raceDateInput = document.getElementById('race-date');
+  const longRunDaySelect = document.getElementById('long-run-day');
   const convertBtn = document.getElementById('convert');
   const errorBanner = document.getElementById('error-banner');
   const noteBanner = document.getElementById('note-banner');
@@ -37,7 +38,8 @@
     }
     try {
       const rows = parseCSV(csvText);
-      const plan = parsePlan(rows, raceDate);
+      const longRunDayOffset = parseInt(longRunDaySelect.value, 10);
+      const plan = parsePlan(rows, raceDate, { longRunDayOffset });
       const md = renderMarkdown(plan);
       output.value = md;
       preview.innerHTML = marked.parse(md);

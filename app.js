@@ -204,7 +204,19 @@ function assignDates(weeks, raceDate) {
   return { raceWeek, csvRaceDayOffset, userRaceDayOffset };
 }
 
-function parsePlan(rows, raceDateInput) {
+function swapLongRunDay(weeks, longRunDayOffset) {
+  if (longRunDayOffset === 6) return;
+  if (longRunDayOffset < 0 || longRunDayOffset > 6) {
+    throw new Error(`Invalid long run day offset: ${longRunDayOffset}. Expected 0–6.`);
+  }
+  for (const w of weeks) {
+    const tmp = w.days[longRunDayOffset];
+    w.days[longRunDayOffset] = w.days[6];
+    w.days[6] = tmp;
+  }
+}
+
+function parsePlan(rows, raceDateInput, options = {}) {
   const headerIdx = findHeaderRow(rows);
   if (headerIdx === -1) {
     throw new Error('Header row not found. Expected a row beginning with "WEEK,WORKOUT,...".');
@@ -212,9 +224,11 @@ function parsePlan(rows, raceDateInput) {
   const title = extractTitle(rows, headerIdx);
   const blocks = groupIntoBlocks(rows, headerIdx);
   const weeks = blocks.map(buildWeek);
+  const longRunDayOffset = options.longRunDayOffset != null ? options.longRunDayOffset : 6;
+  swapLongRunDay(weeks, longRunDayOffset);
   const raceDate = parseISODate(raceDateInput);
   const anchor = assignDates(weeks, raceDate);
-  return { title, weeks, raceDate, anchor };
+  return { title, weeks, raceDate, anchor, longRunDayOffset };
 }
 
 function formatLongDate(date) {
@@ -363,5 +377,6 @@ if (typeof module !== 'undefined' && module.exports) {
     formatLongDate,
     formatShortDate,
     addDays,
+    DAY_NAMES,
   };
 }

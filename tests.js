@@ -203,6 +203,29 @@ QUnit.module('renderMarkdown', hooks => {
     assert.ok(w12Section.includes('### Sunday, 5/17/2026'), 'Sunday is final day');
   });
 
+  QUnit.test('long run day swap moves Sunday content to selected day across all weeks', assert => {
+    const sundayPlan = parsePlan(parseCSV(csvText), '2026-05-17');
+    const saturdayPlan = parsePlan(parseCSV(csvText), '2026-05-17', { longRunDayOffset: 5 });
+    const sun9 = sundayPlan.weeks.find(w => w.number === 9);
+    const sat9 = saturdayPlan.weeks.find(w => w.number === 9);
+    assert.deepEqual(sat9.days[5], sun9.days[6], 'long run day got Sunday content');
+    assert.deepEqual(sat9.days[6], sun9.days[5], 'Sunday got the original Saturday content');
+  });
+
+  QUnit.test('long run swap interacts correctly with race day relocation', assert => {
+    const plan = parsePlan(parseCSV(csvText), '2026-05-16', { longRunDayOffset: 5 });
+    const md = renderMarkdown(plan);
+    const w12 = md.split(/^## Week 12,/m)[1];
+    assert.ok(w12.includes('### Saturday, 5/16/2026'), 'Saturday is rendered');
+    assert.ok(/^Race Day!$/m.test(w12.split(/### Saturday,/)[1]), 'race day still lands on Saturday');
+  });
+
+  QUnit.test('default longRunDayOffset is Sunday (no swap)', assert => {
+    const a = parsePlan(parseCSV(csvText), '2026-05-17');
+    const b = parsePlan(parseCSV(csvText), '2026-05-17', { longRunDayOffset: 6 });
+    assert.deepEqual(a.weeks, b.weeks);
+  });
+
   QUnit.test('race day renders as plain "Race Day!" with no bullets or checkboxes', assert => {
     const plan = parsePlan(parseCSV(csvText), '2026-05-17');
     const md = renderMarkdown(plan);

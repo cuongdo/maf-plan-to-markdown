@@ -227,6 +227,29 @@ test('11 horizontal rule separators between 12 weeks', () => {
   const hrCount = (md.match(/^---$/gm) || []).length;
   eq(hrCount, 11);
 });
+test('long run day swap moves Sunday content to selected day across all weeks', () => {
+  const sundayPlan = parsePlan(parseCSV(csvText), '2026-05-17');
+  const saturdayPlan = parsePlan(parseCSV(csvText), '2026-05-17', { longRunDayOffset: 5 });
+  // Pick a non-race week (week 9) where Sunday has the long run
+  const sun9 = sundayPlan.weeks.find(w => w.number === 9);
+  const sat9 = saturdayPlan.weeks.find(w => w.number === 9);
+  // Saturday-plan: day[5] should equal Sunday-plan day[6], and vice versa
+  deepEq(sat9.days[5], sun9.days[6], 'long run day got Sunday content');
+  deepEq(sat9.days[6], sun9.days[5], 'Sunday got the original Saturday content');
+});
+test('long run swap interacts correctly with race day relocation', () => {
+  // Pick Saturday as long run AND Saturday race date; Race day was originally on Sunday
+  const plan = parsePlan(parseCSV(csvText), '2026-05-16', { longRunDayOffset: 5 });
+  const md2 = renderMarkdown(plan);
+  const w12 = md2.split(/^## Week 12,/m)[1];
+  ok(w12.includes('### Saturday, 5/16/2026'), 'Saturday is rendered');
+  ok(/^Race Day!$/m.test(w12.split(/### Saturday,/)[1]), 'race day still lands on Saturday');
+});
+test('default longRunDayOffset is Sunday (no swap)', () => {
+  const a = parsePlan(parseCSV(csvText), '2026-05-17');
+  const b = parsePlan(parseCSV(csvText), '2026-05-17', { longRunDayOffset: 6 });
+  eq(JSON.stringify(a.weeks), JSON.stringify(b.weeks));
+});
 test('race day renders as plain "Race Day!" with no bullets or checkboxes', () => {
   const w12 = md.split(/^## Week 12,/m)[1];
   const sun = w12.split(/### Sunday,/)[1];
