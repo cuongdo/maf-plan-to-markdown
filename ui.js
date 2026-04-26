@@ -40,8 +40,9 @@
     try {
       const rows = parseCSV(csvText);
       const longRunDayOffset = parseInt(longRunDaySelect.value, 10);
-      const isRace = dateModeSelect.value === 'race';
-      const plan = parsePlan(rows, raceDate, { longRunDayOffset, isRace });
+      const mode = dateModeSelect.value;
+      const plan = parsePlan(rows, raceDate, { longRunDayOffset, mode });
+      const isRace = mode === 'race';
       const md = renderMarkdown(plan);
       output.value = md;
       preview.innerHTML = marked.parse(md);

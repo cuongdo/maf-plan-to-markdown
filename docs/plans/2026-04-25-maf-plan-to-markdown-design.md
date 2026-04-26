@@ -121,13 +121,15 @@ The publisher CSVs put the long run on Sunday. If the user picks a different lon
 
 Default offset is 6 (Sunday → no-op).
 
-## Race vs. non-race mode
+## Anchor modes
 
-Two top-level modes, controlled by the "This is a race" checkbox:
+Three top-level modes, selected by the date-type dropdown:
 
-**Race mode (default).** The CSV is expected to have a `Race week` stage and a `Race day` cell. Calendar is anchored to the user's race date; the race-day cell content is relocated to the user's race weekday position; the race week is truncated to end on the race day; the race-day section renders as a plain `Race Day!` line.
+**Race mode (default).** CSV must have a `Race week` stage and a `Race day` cell. Calendar is anchored to the user's race date; race-day cell content is relocated to the user's race weekday position; the race week is truncated to end on the race day; the race-day section renders as a plain `Race Day!` line.
 
-**Non-race mode.** No race-week or race-day handling. The user supplies an end date; the calendar is anchored to it; the highest-numbered week ends on that date and is truncated accordingly. The "Race day" replacement is suppressed — if the source CSV happens to contain a `Race day` cell, it renders as literal text under normal bullets.
+**End mode.** The user supplies the plan's end date. Calendar is anchored to it; the highest-numbered week ends on that date and is truncated accordingly. The race-day replacement is suppressed — any `Race day` cell text renders as literal content under normal bullets. Works on plans without a `Race week` stage.
+
+**Start mode.** The user supplies the plan's start date. The first week's Monday is set to the first Monday on or before the start date. Subsequent weeks march forward in 7-day increments; the final week renders Mon–Sun in full. Like end mode, no race-day handling.
 
 ## Date anchoring
 

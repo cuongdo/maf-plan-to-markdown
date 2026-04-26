@@ -255,6 +255,28 @@ test('non-race mode: end date truncates last week, no Race Day! replacement', ()
   ok(/### Wednesday, 5\/13\/2026/.test(w12), 'final week ends on user end date');
   ok(!/### Thursday,/.test(w12), 'no Thursday rendered (truncated)');
 });
+test('start mode: anchors first week Mon to first Monday on/before start date', () => {
+  // Start date 2026-03-04 (Wednesday). First Monday on/before = 2026-03-02.
+  const plan = parsePlan(parseCSV(csvText), '2026-03-04', { mode: 'start' });
+  eq(plan.mode, 'start');
+  eq(plan.isRace, false);
+  const w1 = plan.weeks.find(w => w.number === 1);
+  eq(formatShortDate(w1.mondayDate), '3/2/2026');
+});
+test('start mode: start date that is a Monday anchors directly', () => {
+  const plan = parsePlan(parseCSV(csvText), '2026-03-02', { mode: 'start' });
+  const w1 = plan.weeks.find(w => w.number === 1);
+  eq(formatShortDate(w1.mondayDate), '3/2/2026');
+});
+test('start mode: weeks march forward and last week renders all 7 days', () => {
+  const plan = parsePlan(parseCSV(csvText), '2026-03-02', { mode: 'start' });
+  const md = renderMarkdown(plan);
+  // Week 12 Monday should be 12 weeks after week 1: 3/2 + 7*11 = 5/18
+  const w12 = md.split(/^## Week 12,/m)[1];
+  ok(/^## Week 12,.*May 18, 2026/m.test(md), 'week 12 dated correctly');
+  ok(/### Sunday, 5\/24\/2026/.test(w12), 'last week renders through Sunday');
+  ok(!/^Race Day!$/m.test(md), 'no Race Day! replacement in start mode');
+});
 test('non-race mode + Sunday end date: Race day cell renders as literal content, not Race Day!', () => {
   const plan = parsePlan(parseCSV(csvText), '2026-05-17', { isRace: false });
   const md2 = renderMarkdown(plan);

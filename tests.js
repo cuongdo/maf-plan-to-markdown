@@ -230,6 +230,23 @@ QUnit.module('renderMarkdown', hooks => {
     assert.notOk(/### Thursday,/.test(w12), 'no Thursday rendered (truncated)');
   });
 
+  QUnit.test('start mode: anchors first week Mon to first Monday on/before start date', assert => {
+    const plan = parsePlan(parseCSV(csvText), '2026-03-04', { mode: 'start' });
+    assert.equal(plan.mode, 'start');
+    assert.equal(plan.isRace, false);
+    const w1 = plan.weeks.find(w => w.number === 1);
+    assert.equal(formatShortDate(w1.mondayDate), '3/2/2026');
+  });
+
+  QUnit.test('start mode: weeks march forward, last week full Mon-Sun, no Race Day!', assert => {
+    const plan = parsePlan(parseCSV(csvText), '2026-03-02', { mode: 'start' });
+    const md = renderMarkdown(plan);
+    const w12 = md.split(/^## Week 12,/m)[1];
+    assert.ok(/^## Week 12,.*May 18, 2026/m.test(md), 'week 12 dated correctly');
+    assert.ok(/### Sunday, 5\/24\/2026/.test(w12), 'last week renders through Sunday');
+    assert.notOk(/^Race Day!$/m.test(md), 'no Race Day! replacement');
+  });
+
   QUnit.test('non-race mode + Sunday end date: Race day cell renders as literal content', assert => {
     const plan = parsePlan(parseCSV(csvText), '2026-05-17', { isRace: false });
     const md = renderMarkdown(plan);

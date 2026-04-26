@@ -229,6 +229,18 @@ function assignEndDate(weeks, endDate) {
   return { lastWeek, endDayOffset };
 }
 
+function assignStartDate(weeks, startDate) {
+  const firstWeek = weeks.reduce((a, b) => (a.number < b.number ? a : b));
+  const startDayOffset = (startDate.getDay() + 6) % 7;
+  const firstWeekMonday = addDays(startDate, -startDayOffset);
+  for (const w of weeks) {
+    const weeksAfter = w.number - firstWeek.number;
+    w.mondayDate = addDays(firstWeekMonday, 7 * weeksAfter);
+    w.dayCount = 7;
+  }
+  return { firstWeek };
+}
+
 function parsePlan(rows, dateInput, options = {}) {
   const headerIdx = findHeaderRow(rows);
   if (headerIdx === -1) {
@@ -238,16 +250,19 @@ function parsePlan(rows, dateInput, options = {}) {
   const blocks = groupIntoBlocks(rows, headerIdx);
   const weeks = blocks.map(buildWeek);
   const longRunDayOffset = options.longRunDayOffset != null ? options.longRunDayOffset : 6;
-  const isRace = options.isRace !== false;
+  let mode = options.mode;
+  if (!mode) mode = options.isRace === false ? 'end' : 'race';
+  if (mode !== 'race' && mode !== 'end' && mode !== 'start') {
+    throw new Error(`Invalid mode: ${mode}. Expected 'race', 'end', or 'start'.`);
+  }
   swapLongRunDay(weeks, longRunDayOffset);
   const date = parseISODate(dateInput);
-  if (isRace) {
-    const anchor = assignDates(weeks, date);
-    return { title, weeks, raceDate: date, anchor, longRunDayOffset, isRace: true };
-  } else {
-    const anchor = assignEndDate(weeks, date);
-    return { title, weeks, endDate: date, anchor, longRunDayOffset, isRace: false };
-  }
+  const isRace = mode === 'race';
+  let anchor;
+  if (mode === 'race') anchor = assignDates(weeks, date);
+  else if (mode === 'end') anchor = assignEndDate(weeks, date);
+  else anchor = assignStartDate(weeks, date);
+  return { title, weeks, date, mode, anchor, longRunDayOffset, isRace };
 }
 
 function formatLongDate(date) {
