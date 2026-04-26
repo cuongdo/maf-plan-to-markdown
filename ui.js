@@ -4,8 +4,7 @@
   const fileInput = document.getElementById('csv-file');
   const pasteArea = document.getElementById('csv-paste');
   const raceDateInput = document.getElementById('race-date');
-  const dateLabel = document.getElementById('date-label');
-  const isRaceCheckbox = document.getElementById('is-race');
+  const dateModeSelect = document.getElementById('date-mode');
   const longRunDaySelect = document.getElementById('long-run-day');
   const convertBtn = document.getElementById('convert');
   const errorBanner = document.getElementById('error-banner');
@@ -16,12 +15,6 @@
   const downloadBtn = document.getElementById('download');
 
   raceDateInput.value = todayISO();
-  updateDateLabel();
-  isRaceCheckbox.addEventListener('change', updateDateLabel);
-
-  function updateDateLabel() {
-    dateLabel.textContent = isRaceCheckbox.checked ? 'Race date' : 'End date';
-  }
 
   fileInput.addEventListener('change', async () => {
     const file = fileInput.files[0];
@@ -47,7 +40,7 @@
     try {
       const rows = parseCSV(csvText);
       const longRunDayOffset = parseInt(longRunDaySelect.value, 10);
-      const isRace = isRaceCheckbox.checked;
+      const isRace = dateModeSelect.value === 'race';
       const plan = parsePlan(rows, raceDate, { longRunDayOffset, isRace });
       const md = renderMarkdown(plan);
       output.value = md;
