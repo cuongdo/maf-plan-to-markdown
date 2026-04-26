@@ -245,6 +245,40 @@ test('long run swap interacts correctly with race day relocation', () => {
   ok(w12.includes('### Saturday, 5/16/2026'), 'Saturday is rendered');
   ok(/^Race Day!$/m.test(w12.split(/### Saturday,/)[1]), 'race day still lands on Saturday');
 });
+test('non-race mode: end date truncates last week, no Race Day! replacement', () => {
+  // End date is a Wednesday — the plan's last week truncates to Wed
+  const plan = parsePlan(parseCSV(csvText), '2026-05-13', { isRace: false });
+  eq(plan.isRace, false);
+  const md2 = renderMarkdown(plan);
+  ok(!/^Race Day!$/m.test(md2), 'no "Race Day!" line in non-race mode');
+  const w12 = md2.split(/^## Week 12,/m)[1];
+  ok(/### Wednesday, 5\/13\/2026/.test(w12), 'final week ends on user end date');
+  ok(!/### Thursday,/.test(w12), 'no Thursday rendered (truncated)');
+});
+test('non-race mode + Sunday end date: Race day cell renders as literal content, not Race Day!', () => {
+  const plan = parsePlan(parseCSV(csvText), '2026-05-17', { isRace: false });
+  const md2 = renderMarkdown(plan);
+  const w12 = md2.split(/^## Week 12,/m)[1];
+  ok(/### Sunday, 5\/17\/2026/.test(w12), 'last week rendered through Sunday');
+  const sun = w12.split(/### Sunday,/)[1];
+  ok(!/^Race Day!$/m.test(sun), 'no Race Day! plain line');
+  ok(/- \[ \] Higher intensity:[\s\S]*Race day/i.test(sun), 'Race day rendered as normal bullet content');
+});
+test('non-race mode: works on a CSV with no Race week stage', () => {
+  // The CSV has Race week, but in non-race mode we never look for it
+  // Build a minimal CSV with no Race week stage
+  const csv = [
+    'WEEK,WORKOUT,MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY,SATURDAY,SUNDAY,WEEKLY VOLUME,STAGE',
+    '1,Aerobic run or walk,rest,30 min,,rest,30 min,30 min,40 min,180 minutes,build',
+    ',Higher intensity,,,,,,,,3 hours,',
+    ',Drills and/or strides,,yes,,,,yes,,,',
+    ',Cross-training,,,,30 min,,40 min,,,',
+    ',Strength training,,yes,,,yes,,,,',
+  ].join('\n');
+  const plan = parsePlan(parseCSV(csv), '2026-04-26', { isRace: false });
+  eq(plan.weeks.length, 1);
+  ok(plan.weeks[0].mondayDate, 'date assigned without race anchor');
+});
 test('default longRunDayOffset is Sunday (no swap)', () => {
   const a = parsePlan(parseCSV(csvText), '2026-05-17');
   const b = parsePlan(parseCSV(csvText), '2026-05-17', { longRunDayOffset: 6 });

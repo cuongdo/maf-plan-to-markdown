@@ -220,6 +220,24 @@ QUnit.module('renderMarkdown', hooks => {
     assert.ok(/^Race Day!$/m.test(w12.split(/### Saturday,/)[1]), 'race day still lands on Saturday');
   });
 
+  QUnit.test('non-race mode: end date truncates last week, no Race Day! replacement', assert => {
+    const plan = parsePlan(parseCSV(csvText), '2026-05-13', { isRace: false });
+    assert.equal(plan.isRace, false);
+    const md = renderMarkdown(plan);
+    assert.notOk(/^Race Day!$/m.test(md), 'no "Race Day!" line in non-race mode');
+    const w12 = md.split(/^## Week 12,/m)[1];
+    assert.ok(/### Wednesday, 5\/13\/2026/.test(w12), 'final week ends on user end date');
+    assert.notOk(/### Thursday,/.test(w12), 'no Thursday rendered (truncated)');
+  });
+
+  QUnit.test('non-race mode + Sunday end date: Race day cell renders as literal content', assert => {
+    const plan = parsePlan(parseCSV(csvText), '2026-05-17', { isRace: false });
+    const md = renderMarkdown(plan);
+    const sun = md.split(/^## Week 12,/m)[1].split(/### Sunday,/)[1];
+    assert.notOk(/^Race Day!$/m.test(sun), 'no Race Day! plain line');
+    assert.ok(/- \[ \] Higher intensity:[\s\S]*Race day/i.test(sun), 'Race day rendered as normal bullet content');
+  });
+
   QUnit.test('default longRunDayOffset is Sunday (no swap)', assert => {
     const a = parsePlan(parseCSV(csvText), '2026-05-17');
     const b = parsePlan(parseCSV(csvText), '2026-05-17', { longRunDayOffset: 6 });

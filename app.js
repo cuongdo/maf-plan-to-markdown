@@ -216,7 +216,20 @@ function swapLongRunDay(weeks, longRunDayOffset) {
   }
 }
 
-function parsePlan(rows, raceDateInput, options = {}) {
+function assignEndDate(weeks, endDate) {
+  const lastWeek = weeks.reduce((a, b) => (a.number > b.number ? a : b));
+  const endDayOffset = (endDate.getDay() + 6) % 7;
+  const lastWeekMonday = addDays(endDate, -endDayOffset);
+  for (const w of weeks) {
+    const weeksBefore = lastWeek.number - w.number;
+    w.mondayDate = addDays(lastWeekMonday, -7 * weeksBefore);
+    w.dayCount = 7;
+  }
+  lastWeek.dayCount = endDayOffset + 1;
+  return { lastWeek, endDayOffset };
+}
+
+function parsePlan(rows, dateInput, options = {}) {
   const headerIdx = findHeaderRow(rows);
   if (headerIdx === -1) {
     throw new Error('Header row not found. Expected a row beginning with "WEEK,WORKOUT,...".');
@@ -225,10 +238,16 @@ function parsePlan(rows, raceDateInput, options = {}) {
   const blocks = groupIntoBlocks(rows, headerIdx);
   const weeks = blocks.map(buildWeek);
   const longRunDayOffset = options.longRunDayOffset != null ? options.longRunDayOffset : 6;
+  const isRace = options.isRace !== false;
   swapLongRunDay(weeks, longRunDayOffset);
-  const raceDate = parseISODate(raceDateInput);
-  const anchor = assignDates(weeks, raceDate);
-  return { title, weeks, raceDate, anchor, longRunDayOffset };
+  const date = parseISODate(dateInput);
+  if (isRace) {
+    const anchor = assignDates(weeks, date);
+    return { title, weeks, raceDate: date, anchor, longRunDayOffset, isRace: true };
+  } else {
+    const anchor = assignEndDate(weeks, date);
+    return { title, weeks, endDate: date, anchor, longRunDayOffset, isRace: false };
+  }
 }
 
 function formatLongDate(date) {
@@ -275,10 +294,10 @@ function isRaceDay(day) {
   return cells.some(c => c && /race day/i.test(c));
 }
 
-function renderDay(day, dayName, dateStr) {
+function renderDay(day, dayName, dateStr, isRace) {
   const lines = [`### ${dayName}, ${dateStr}`];
 
-  if (isRaceDay(day)) {
+  if (isRace && isRaceDay(day)) {
     lines.push('Race Day!');
     return lines.join('\n');
   }
@@ -316,7 +335,7 @@ function renderDay(day, dayName, dateStr) {
   return lines.concat(items).join('\n');
 }
 
-function renderWeek(week) {
+function renderWeek(week, isRace) {
   const monday = week.mondayDate;
   const stagePart = week.stage ? ` (${week.stage})` : '';
   const lines = [
@@ -327,7 +346,7 @@ function renderWeek(week) {
   const dayCount = week.dayCount || 7;
   for (let d = 0; d < dayCount; d++) {
     const dayDate = addDays(monday, d);
-    lines.push(renderDay(week.days[d], DAY_NAMES[d], formatShortDate(dayDate)));
+    lines.push(renderDay(week.days[d], DAY_NAMES[d], formatShortDate(dayDate), isRace));
     lines.push('');
   }
   while (lines.length && lines[lines.length - 1] === '') lines.pop();
@@ -341,13 +360,14 @@ function renderMarkdown(plan) {
     out.push('');
   }
   const sortedWeeks = [...plan.weeks].sort((a, b) => a.number - b.number);
+  const isRace = plan.isRace !== false;
   for (let i = 0; i < sortedWeeks.length; i++) {
     if (i > 0) {
       out.push('');
       out.push('---');
       out.push('');
     }
-    out.push(renderWeek(sortedWeeks[i]));
+    out.push(renderWeek(sortedWeeks[i], isRace));
   }
   out.push('');
   return out.join('\n');

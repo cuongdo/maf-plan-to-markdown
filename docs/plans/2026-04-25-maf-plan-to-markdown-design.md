@@ -49,7 +49,8 @@ The split between `app.js` (pure functions) and `ui.js` (DOM wiring) keeps the p
 
 Inputs:
 - CSV file picker (or paste textarea)
-- Race date (`<input type="date">`)
+- Race / end date (`<input type="date">`)
+- "This is a race" checkbox (defaults checked). When unchecked, the date label flips to "End date" and race-day handling is skipped (see below)
 - Long run day dropdown (Mon–Sun, defaults to Sunday — the publisher's convention)
 
 Two-column flexbox layout, stacking on narrow screens:
@@ -119,6 +120,14 @@ The publisher CSVs put the long run on Sunday. If the user picks a different lon
 - Applied **before** race-day relocation, so the race-day cell content (which originally lived in the Sunday column) follows the swap to the new long run day. The race-day relocation logic then moves it to the user's actual race-day position.
 
 Default offset is 6 (Sunday → no-op).
+
+## Race vs. non-race mode
+
+Two top-level modes, controlled by the "This is a race" checkbox:
+
+**Race mode (default).** The CSV is expected to have a `Race week` stage and a `Race day` cell. Calendar is anchored to the user's race date; the race-day cell content is relocated to the user's race weekday position; the race week is truncated to end on the race day; the race-day section renders as a plain `Race Day!` line.
+
+**Non-race mode.** No race-week or race-day handling. The user supplies an end date; the calendar is anchored to it; the highest-numbered week ends on that date and is truncated accordingly. The "Race day" replacement is suppressed — if the source CSV happens to contain a `Race day` cell, it renders as literal text under normal bullets.
 
 ## Date anchoring
 
